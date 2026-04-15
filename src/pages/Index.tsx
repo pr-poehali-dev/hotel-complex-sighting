@@ -325,148 +325,131 @@ export default function Index() {
             />
           </svg>
 
-          {/* Markers */}
-          {stages.map((stage, idx) => (
-            <button
-              key={stage.id}
-              onClick={() => openStage(stage)}
-              title={stage.title}
-              className="group"
-              style={{
-                position: "absolute",
-                left: stage.x,
-                top: stage.y,
-                transform: "translate(-50%, -50%)",
-                zIndex: 10,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                padding: 0,
-              }}
-            >
-              <div
-                className="map-marker"
+          {/* Markers — old-map X crosses with labels */}
+          {stages.map((stage, idx) => {
+            const isLast = stage.id === 6;
+            const labelBelow = idx % 2 === 0;
+            return (
+              <button
+                key={stage.id}
+                onClick={() => openStage(stage)}
+                title={stage.title}
+                className="group"
                 style={{
-                  position: "relative",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  animationDelay: `${idx * 0.4}s`,
+                  position: "absolute",
+                  left: stage.x,
+                  top: stage.y,
+                  transform: "translate(-50%, -50%)",
+                  zIndex: 10,
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
                 }}
               >
-                {/* Visited badge */}
-                {visitedStages.has(stage.id) && (
+                <div
+                  className="map-marker"
+                  style={{
+                    position: "relative",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    animationDelay: `${idx * 0.4}s`,
+                  }}
+                >
+                  {/* The X cross */}
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 40 40"
+                    style={{
+                      filter: `drop-shadow(0 2px 4px rgba(44,24,16,0.3))`,
+                      transition: "transform 0.25s ease",
+                    }}
+                    className="cross-svg"
+                    onMouseEnter={(e) => { (e.currentTarget as SVGElement).style.transform = "scale(1.25) rotate(12deg)"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as SVGElement).style.transform = "scale(1) rotate(0deg)"; }}
+                  >
+                    <line x1="6" y1="6" x2="34" y2="34" stroke={stage.color} strokeWidth={isLast ? "5" : "3.5"} strokeLinecap="round" />
+                    <line x1="34" y1="6" x2="6" y2="34" stroke={stage.color} strokeWidth={isLast ? "5" : "3.5"} strokeLinecap="round" />
+                    {isLast && (
+                      <circle cx="20" cy="20" r="16" fill="none" stroke={stage.color} strokeWidth="2" strokeDasharray="4,3" />
+                    )}
+                  </svg>
+
+                  {/* Roman numeral */}
                   <div
                     style={{
                       position: "absolute",
-                      top: "-0.5rem",
-                      right: "-0.5rem",
-                      width: "1.1rem",
-                      height: "1.1rem",
-                      borderRadius: "50%",
-                      backgroundColor: stage.color,
-                      color: "white",
-                      fontSize: "0.5rem",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      zIndex: 20,
-                      border: "1.5px solid var(--parchment)",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      fontFamily: "'Cormorant', serif",
+                      fontWeight: 700,
+                      fontSize: "0.7rem",
+                      color: "var(--parchment)",
+                      textShadow: `0 0 4px ${stage.color}, 0 0 4px ${stage.color}, 0 0 4px ${stage.color}`,
+                      pointerEvents: "none",
                     }}
                   >
-                    ✓
+                    {["I", "II", "III", "IV", "V", "VI"][idx]}
                   </div>
-                )}
 
-                {/* Pin circle */}
-                <div
-                  className="pin-circle"
-                  style={{
-                    width: "clamp(2.5rem, 4vw, 3.5rem)",
-                    height: "clamp(2.5rem, 4vw, 3.5rem)",
-                    borderRadius: "50%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "clamp(1.2rem, 2.5vw, 1.8rem)",
-                    backgroundColor: "var(--parchment)",
-                    border: `3px solid ${stage.color}`,
-                    boxShadow: `0 4px 16px rgba(44,24,16,0.25), 0 0 0 2px var(--parchment-dark)`,
-                    transition: "transform 0.25s ease",
-                  }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.2) translateY(-4px)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1) translateY(0)"; }}
-                >
-                  {stage.emoji}
-                </div>
-
-                {/* Pin stem */}
-                <div
-                  style={{
-                    width: "4px",
-                    height: "12px",
-                    borderBottomLeftRadius: "4px",
-                    borderBottomRightRadius: "4px",
-                    backgroundColor: stage.color,
-                    marginTop: "-2px",
-                  }}
-                />
-
-                {/* Number badge */}
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: "-4px",
-                    left: "-4px",
-                    width: "1.2rem",
-                    height: "1.2rem",
-                    borderRadius: "50%",
-                    backgroundColor: stage.color,
-                    color: "white",
-                    fontSize: "0.6rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontFamily: "'Oswald', sans-serif",
-                    border: "1.5px solid var(--parchment)",
-                  }}
-                >
-                  {stage.id}
-                </div>
-
-                {/* Tooltip */}
-                <div
-                  className="pin-tooltip"
-                  style={{
-                    position: "absolute",
-                    top: "calc(100% + 8px)",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    whiteSpace: "nowrap",
-                    pointerEvents: "none",
-                    opacity: 0,
-                    transition: "opacity 0.2s",
-                    zIndex: 50,
-                  }}
-                >
+                  {/* Always-visible label */}
                   <div
                     style={{
-                      padding: "0.3rem 0.75rem",
-                      borderRadius: "2px",
-                      backgroundColor: "var(--ink)",
-                      color: "var(--parchment)",
-                      fontFamily: "'Oswald', sans-serif",
-                      fontSize: "0.7rem",
-                      letterSpacing: "0.05em",
-                      boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
+                      position: "absolute",
+                      ...(labelBelow
+                        ? { top: "calc(100% + 4px)" }
+                        : { bottom: "calc(100% + 4px)" }),
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      whiteSpace: "nowrap",
+                      pointerEvents: "none",
+                      zIndex: 50,
+                      textAlign: "center",
                     }}
                   >
-                    {stage.title}
+                    <div
+                      style={{
+                        fontFamily: "'Caveat', cursive",
+                        fontSize: "clamp(0.7rem, 1.2vw, 0.9rem)",
+                        color: "var(--ink)",
+                        textShadow: "0 0 6px var(--parchment), 0 0 6px var(--parchment), 0 0 6px var(--parchment), 0 0 12px var(--parchment)",
+                        lineHeight: 1.2,
+                        fontWeight: 600,
+                        maxWidth: "120px",
+                        whiteSpace: "normal",
+                        transition: "color 0.2s",
+                      }}
+                      className="cross-label"
+                    >
+                      {stage.title}
+                    </div>
                   </div>
+
+                  {/* Visited checkmark */}
+                  {visitedStages.has(stage.id) && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "-6px",
+                        right: "-10px",
+                        fontFamily: "'Caveat', cursive",
+                        fontSize: "1.1rem",
+                        color: stage.color,
+                        fontWeight: 700,
+                        textShadow: "0 0 4px var(--parchment)",
+                        pointerEvents: "none",
+                      }}
+                    >
+                      ✓
+                    </div>
+                  )}
                 </div>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
 
           {/* Compass */}
           <div
@@ -863,13 +846,18 @@ export default function Index() {
 
       {/* Tooltip hover styles via global style tag */}
       <style>{`
-        button:hover .pin-tooltip { opacity: 1 !important; }
-
-        @keyframes pulse-glow {
-          0%, 100% { filter: drop-shadow(0 0 0 rgba(200,149,42,0.4)); }
-          50% { filter: drop-shadow(0 0 8px rgba(200,149,42,0.6)); }
+        @keyframes pulse-cross {
+          0%, 100% { filter: drop-shadow(0 0 0 rgba(200,149,42,0.3)); }
+          50% { filter: drop-shadow(0 0 6px rgba(200,149,42,0.5)); }
         }
-        .map-marker { animation: pulse-glow 2.5s ease-in-out infinite; }
+        .map-marker { animation: pulse-cross 3s ease-in-out infinite; }
+
+        button.group:hover .cross-label {
+          color: var(--red-mark) !important;
+        }
+        button.group:hover .cross-svg {
+          filter: drop-shadow(0 0 8px rgba(139,32,32,0.5)) !important;
+        }
 
         @keyframes dash {
           to { stroke-dashoffset: 0; }
