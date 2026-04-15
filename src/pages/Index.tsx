@@ -199,7 +199,7 @@ export default function Index() {
             height: "100%",
             objectFit: "cover",
             filter: "sepia(30%) contrast(0.95) brightness(1.05)",
-            opacity: 0.45,
+            opacity: 0.65,
           }}
         />
         <div
@@ -215,7 +215,7 @@ export default function Index() {
             position: "absolute",
             inset: 0,
             backgroundColor: "var(--parchment)",
-            opacity: 0.4,
+            opacity: 0.25,
             pointerEvents: "none",
           }}
         />
