@@ -319,9 +319,10 @@ export default function Index() {
               points="12,22 32,14 55,20 74,30 82,55 60,68"
               fill="none"
               stroke="var(--red-mark)"
-              strokeWidth="0.5"
-              strokeDasharray="2,1.5"
+              strokeWidth="1.4"
+              strokeDasharray="3,2.5"
               strokeLinecap="round"
+              strokeOpacity="0.85"
             />
           </svg>
 
@@ -357,23 +358,27 @@ export default function Index() {
                     animationDelay: `${idx * 0.4}s`,
                   }}
                 >
-                  {/* The X cross */}
+                  {/* The X cross — bold marker style */}
                   <svg
-                    width="40"
-                    height="40"
-                    viewBox="0 0 40 40"
+                    width="56"
+                    height="56"
+                    viewBox="0 0 56 56"
                     style={{
-                      filter: `drop-shadow(0 2px 4px rgba(44,24,16,0.3))`,
+                      filter: `drop-shadow(0 2px 6px rgba(44,24,16,0.5))`,
                       transition: "transform 0.25s ease",
                     }}
                     className="cross-svg"
                     onMouseEnter={(e) => { (e.currentTarget as SVGElement).style.transform = "scale(1.25) rotate(12deg)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as SVGElement).style.transform = "scale(1) rotate(0deg)"; }}
                   >
-                    <line x1="6" y1="6" x2="34" y2="34" stroke={stage.color} strokeWidth={isLast ? "5" : "3.5"} strokeLinecap="round" />
-                    <line x1="34" y1="6" x2="6" y2="34" stroke={stage.color} strokeWidth={isLast ? "5" : "3.5"} strokeLinecap="round" />
+                    {/* Dark outline for contrast */}
+                    <line x1="8" y1="8" x2="48" y2="48" stroke="var(--ink)" strokeWidth={isLast ? "11" : "9"} strokeLinecap="round" opacity="0.35" />
+                    <line x1="48" y1="8" x2="8" y2="48" stroke="var(--ink)" strokeWidth={isLast ? "11" : "9"} strokeLinecap="round" opacity="0.35" />
+                    {/* Main bold cross */}
+                    <line x1="8" y1="8" x2="48" y2="48" stroke={stage.color} strokeWidth={isLast ? "8" : "6.5"} strokeLinecap="round" />
+                    <line x1="48" y1="8" x2="8" y2="48" stroke={stage.color} strokeWidth={isLast ? "8" : "6.5"} strokeLinecap="round" />
                     {isLast && (
-                      <circle cx="20" cy="20" r="16" fill="none" stroke={stage.color} strokeWidth="2" strokeDasharray="4,3" />
+                      <circle cx="28" cy="28" r="24" fill="none" stroke={stage.color} strokeWidth="3.5" strokeDasharray="5,4" />
                     )}
                   </svg>
 
@@ -386,10 +391,11 @@ export default function Index() {
                       transform: "translate(-50%, -50%)",
                       fontFamily: "'Cormorant', serif",
                       fontWeight: 700,
-                      fontSize: "0.7rem",
+                      fontSize: "0.9rem",
                       color: "var(--parchment)",
-                      textShadow: `0 0 4px ${stage.color}, 0 0 4px ${stage.color}, 0 0 4px ${stage.color}`,
+                      textShadow: `0 0 5px ${stage.color}, 0 0 5px ${stage.color}, 0 0 5px ${stage.color}, 0 0 8px var(--ink)`,
                       pointerEvents: "none",
+                      letterSpacing: "-0.02em",
                     }}
                   >
                     {["I", "II", "III", "IV", "V", "VI"][idx]}
