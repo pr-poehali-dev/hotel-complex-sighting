@@ -141,44 +141,42 @@ const stages: Stage[] = [
 ];
 
 export default function Index() {
-  const [activeStage, setActiveStage] = useState<Stage | null>(null);
-  const [visitedStages, setVisitedStages] = useState<Set<number>>(new Set());
   const [headerVisible, setHeaderVisible] = useState(false);
-  const modalRef = useRef<HTMLDivElement>(null);
+  const [visibleSections, setVisibleSections] = useState<Set<string>>(new Set());
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
     const timer = setTimeout(() => setHeaderVisible(true), 200);
     return () => clearTimeout(timer);
   }, []);
 
-  const openStage = (stage: Stage) => {
-    setActiveStage(stage);
-    setVisitedStages((prev) => new Set([...prev, stage.id]));
-  };
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setVisibleSections((prev) => new Set([...prev, entry.target.id]));
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
 
-  const closeStage = () => setActiveStage(null);
+    Object.values(sectionRefs.current).forEach((el) => {
+      if (el) observer.observe(el);
+    });
 
-  const goToNext = () => {
-    if (!activeStage) return;
-    const idx = stages.findIndex((s) => s.id === activeStage.id);
-    openStage(stages[(idx + 1) % stages.length]);
-  };
+    return () => observer.disconnect();
+  }, []);
 
-  const goToPrev = () => {
-    if (!activeStage) return;
-    const idx = stages.findIndex((s) => s.id === activeStage.id);
-    openStage(stages[(idx - 1 + stages.length) % stages.length]);
-  };
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      closeStage();
-    }
+  const scrollToStage = (slug: string) => {
+    const el = sectionRefs.current[slug];
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
     <div
-      className="min-h-screen relative overflow-hidden"
+      className="min-h-screen relative"
       style={{ backgroundColor: "var(--parchment)", fontFamily: "'Cormorant Garamond', serif" }}
     >
       {/* HEADER */}
@@ -238,42 +236,10 @@ export default function Index() {
             <div style={{ height: "1px", width: "5rem", background: "linear-gradient(to left, transparent, var(--gold))" }} />
           </div>
         </div>
-
-        {/* Progress tracker */}
-        <div style={{ marginTop: "1.25rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}>
-          <span style={{ fontSize: "0.8rem", fontStyle: "italic", color: "var(--ink-light)" }}>Открыто:</span>
-          {stages.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => openStage(s)}
-              title={s.title}
-              style={{
-                width: "2rem",
-                height: "2rem",
-                borderRadius: "50%",
-                fontSize: "0.65rem",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                border: `2px solid ${visitedStages.has(s.id) ? s.color : "var(--gold)"}`,
-                backgroundColor: visitedStages.has(s.id) ? s.color : "transparent",
-                color: visitedStages.has(s.id) ? "white" : "var(--gold)",
-                fontFamily: "'Oswald', sans-serif",
-                cursor: "pointer",
-                transition: "all 0.3s",
-              }}
-            >
-              {visitedStages.has(s.id) ? "✓" : s.id}
-            </button>
-          ))}
-          <span style={{ fontSize: "0.8rem", fontStyle: "italic", color: "var(--ink-light)", marginLeft: "0.25rem" }}>
-            {visitedStages.size}/{stages.length}
-          </span>
-        </div>
       </header>
 
       {/* MAP */}
-      <main style={{ position: "relative", maxWidth: "1200px", margin: "0 auto", padding: "0 1rem 4rem" }}>
+      <section style={{ position: "relative", maxWidth: "1200px", margin: "0 auto", padding: "0 1rem" }}>
         <div
           style={{
             position: "relative",
@@ -285,7 +251,6 @@ export default function Index() {
             boxShadow: "0 8px 40px rgba(44,24,16,0.2), inset 0 0 60px rgba(44,24,16,0.05)",
           }}
         >
-          {/* Background */}
           <img
             src={MAP_BG}
             alt="Карта"
@@ -299,7 +264,6 @@ export default function Index() {
             }}
           />
 
-          {/* Sea overlay */}
           <div
             style={{
               position: "absolute",
@@ -308,7 +272,7 @@ export default function Index() {
             }}
           />
 
-          {/* Dotted path SVG */}
+          {/* Dotted path */}
           <svg
             style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none" }}
             viewBox="0 0 100 100"
@@ -326,14 +290,14 @@ export default function Index() {
             />
           </svg>
 
-          {/* Markers — old-map X crosses with labels */}
+          {/* X crosses on map */}
           {stages.map((stage, idx) => {
             const isLast = stage.id === 6;
             const labelBelow = idx % 2 === 0;
             return (
               <button
                 key={stage.id}
-                onClick={() => openStage(stage)}
+                onClick={() => scrollToStage(stage.slug)}
                 title={stage.title}
                 className="group"
                 style={{
@@ -358,7 +322,6 @@ export default function Index() {
                     animationDelay: `${idx * 0.4}s`,
                   }}
                 >
-                  {/* The X cross — bold marker style */}
                   <svg
                     width="56"
                     height="56"
@@ -371,10 +334,8 @@ export default function Index() {
                     onMouseEnter={(e) => { (e.currentTarget as SVGElement).style.transform = "scale(1.25) rotate(12deg)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as SVGElement).style.transform = "scale(1) rotate(0deg)"; }}
                   >
-                    {/* Dark outline for contrast */}
                     <line x1="8" y1="8" x2="48" y2="48" stroke="var(--ink)" strokeWidth={isLast ? "11" : "9"} strokeLinecap="round" opacity="0.35" />
                     <line x1="48" y1="8" x2="8" y2="48" stroke="var(--ink)" strokeWidth={isLast ? "11" : "9"} strokeLinecap="round" opacity="0.35" />
-                    {/* Main bold cross */}
                     <line x1="8" y1="8" x2="48" y2="48" stroke={stage.color} strokeWidth={isLast ? "8" : "6.5"} strokeLinecap="round" />
                     <line x1="48" y1="8" x2="8" y2="48" stroke={stage.color} strokeWidth={isLast ? "8" : "6.5"} strokeLinecap="round" />
                     {isLast && (
@@ -382,7 +343,6 @@ export default function Index() {
                     )}
                   </svg>
 
-                  {/* Roman numeral */}
                   <div
                     style={{
                       position: "absolute",
@@ -401,16 +361,12 @@ export default function Index() {
                     {["I", "II", "III", "IV", "V", "VI"][idx]}
                   </div>
 
-                  {/* Always-visible label */}
                   <div
                     style={{
                       position: "absolute",
-                      ...(labelBelow
-                        ? { top: "calc(100% + 4px)" }
-                        : { bottom: "calc(100% + 4px)" }),
+                      ...(labelBelow ? { top: "calc(100% + 4px)" } : { bottom: "calc(100% + 4px)" }),
                       left: "50%",
                       transform: "translateX(-50%)",
-                      whiteSpace: "nowrap",
                       pointerEvents: "none",
                       zIndex: 50,
                       textAlign: "center",
@@ -433,56 +389,18 @@ export default function Index() {
                       {stage.title}
                     </div>
                   </div>
-
-                  {/* Visited checkmark */}
-                  {visitedStages.has(stage.id) && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: "-6px",
-                        right: "-10px",
-                        fontFamily: "'Caveat', cursive",
-                        fontSize: "1.1rem",
-                        color: stage.color,
-                        fontWeight: 700,
-                        textShadow: "0 0 4px var(--parchment)",
-                        pointerEvents: "none",
-                      }}
-                    >
-                      ✓
-                    </div>
-                  )}
                 </div>
               </button>
             );
           })}
 
           {/* Compass */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "1rem",
-              right: "1rem",
-              fontSize: "2.5rem",
-              opacity: 0.6,
-              pointerEvents: "none",
-              userSelect: "none",
-            }}
-          >
+          <div style={{ position: "absolute", bottom: "1rem", right: "1rem", fontSize: "2.5rem", opacity: 0.6, pointerEvents: "none", userSelect: "none" }}>
             🧭
           </div>
 
-          {/* Scale bar */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "1rem",
-              left: "1rem",
-              opacity: 0.75,
-              fontFamily: "'Caveat', cursive",
-              color: "var(--ink)",
-            }}
-          >
+          {/* Scale */}
+          <div style={{ position: "absolute", bottom: "1rem", left: "1rem", opacity: 0.75, fontFamily: "'Caveat', cursive", color: "var(--ink)" }}>
             <div style={{ display: "flex" }}>
               <div style={{ width: "2rem", height: "0.5rem", backgroundColor: "var(--ink)" }} />
               <div style={{ width: "2rem", height: "0.5rem", border: "1px solid var(--ink)", backgroundColor: "var(--parchment)" }} />
@@ -490,7 +408,7 @@ export default function Index() {
             <div style={{ fontSize: "0.7rem", marginTop: "0.15rem" }}>0 — 100 м</div>
           </div>
 
-          {/* Cartouche hint */}
+          {/* Hint */}
           <div
             style={{
               position: "absolute",
@@ -508,331 +426,164 @@ export default function Index() {
               whiteSpace: "nowrap",
             }}
           >
-            ⚓ Кликни на метку, чтобы открыть этап
+            ⚓ Кликни на крестик — страница прокрутится к этапу
           </div>
         </div>
+      </section>
 
-        {/* Stage cards below map */}
-        <div
-          style={{
-            marginTop: "2.5rem",
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
-            gap: "1rem",
-          }}
-        >
-          {stages.map((stage) => (
-            <button
+      {/* STAGES — full sections */}
+      <main style={{ maxWidth: "900px", margin: "0 auto", padding: "3rem 1rem 2rem" }}>
+        {stages.map((stage, idx) => {
+          const isVisible = visibleSections.has(stage.slug);
+          const isEven = idx % 2 === 0;
+          return (
+            <div
               key={stage.id}
-              onClick={() => openStage(stage)}
+              id={stage.slug}
+              ref={(el) => { sectionRefs.current[stage.slug] = el; }}
               style={{
-                textAlign: "left",
-                padding: "1rem",
-                borderRadius: "4px",
-                backgroundColor: "rgba(244,232,204,0.7)",
-                border: `2px solid ${visitedStages.has(stage.id) ? stage.color : "var(--gold)"}`,
-                boxShadow: visitedStages.has(stage.id)
-                  ? `0 4px 20px ${stage.color}30`
-                  : "0 2px 8px rgba(44,24,16,0.1)",
-                cursor: "pointer",
-                transition: "transform 0.2s, box-shadow 0.2s",
+                position: "relative",
+                paddingLeft: "3rem",
+                paddingBottom: "3rem",
+                borderLeft: idx < stages.length - 1 ? "3px dashed var(--gold)" : "3px dashed transparent",
+                marginLeft: "1.5rem",
+                scrollMarginTop: "2rem",
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
-                <span style={{ fontSize: "1.5rem" }}>{stage.emoji}</span>
-                <span
-                  style={{
-                    fontSize: "0.65rem",
-                    padding: "0.15rem 0.5rem",
-                    borderRadius: "9999px",
-                    backgroundColor: stage.color,
-                    color: "white",
-                    fontFamily: "'Oswald', sans-serif",
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  Этап {stage.id}
-                </span>
-                {visitedStages.has(stage.id) && (
-                  <span style={{ fontSize: "0.75rem", color: stage.color }}>✓</span>
-                )}
-              </div>
+              {/* Timeline cross marker */}
               <div
-                style={{
-                  fontFamily: "'Cormorant', serif",
-                  color: "var(--ink)",
-                  fontSize: "1rem",
-                  fontWeight: 600,
-                  lineHeight: 1.3,
-                }}
-              >
-                {stage.title}
-              </div>
-              <div
-                style={{
-                  marginTop: "0.25rem",
-                  fontSize: "0.85rem",
-                  fontStyle: "italic",
-                  color: "var(--ink-light)",
-                  fontFamily: "'Cormorant Garamond', serif",
-                }}
-              >
-                {stage.subtitle}
-              </div>
-            </button>
-          ))}
-        </div>
-      </main>
-
-      {/* MODAL */}
-      {activeStage && (
-        <div
-          onClick={handleBackdropClick}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 50,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "1rem",
-            backgroundColor: "rgba(44,24,16,0.65)",
-            backdropFilter: "blur(4px)",
-          }}
-        >
-          <div
-            ref={modalRef}
-            className="animate-fade-in-up"
-            style={{
-              position: "relative",
-              width: "100%",
-              maxWidth: "580px",
-              maxHeight: "90vh",
-              overflowY: "auto",
-              background: "linear-gradient(135deg, var(--parchment) 0%, var(--parchment-dark) 100%)",
-              border: `3px solid ${activeStage.color}`,
-              borderRadius: "6px",
-              boxShadow: `0 20px 60px rgba(44,24,16,0.4), 0 0 0 6px var(--parchment-dark), 0 0 0 8px ${activeStage.color}40`,
-            }}
-          >
-            {/* Corner ornaments */}
-            {["top-2 left-2", "top-2 right-2", "bottom-2 left-2", "bottom-2 right-2"].map((pos, i) => (
-              <span
-                key={i}
                 style={{
                   position: "absolute",
-                  color: activeStage.color,
-                  fontSize: "1rem",
-                  opacity: 0.6,
-                  pointerEvents: "none",
-                  userSelect: "none",
-                  ...(i === 0 ? { top: "0.5rem", left: "0.5rem" } :
-                    i === 1 ? { top: "0.5rem", right: "0.5rem" } :
-                    i === 2 ? { bottom: "0.5rem", left: "0.5rem" } :
-                    { bottom: "0.5rem", right: "0.5rem" }),
-                }}
-              >
-                ✦
-              </span>
-            ))}
-
-            {/* Top row */}
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "1.5rem 1.5rem 0" }}>
-              <div
-                style={{
-                  padding: "0.2rem 0.75rem",
-                  borderRadius: "9999px",
-                  backgroundColor: activeStage.color,
-                  color: "white",
-                  fontSize: "0.7rem",
-                  fontFamily: "'Oswald', sans-serif",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                Этап {activeStage.id} из {stages.length}
-              </div>
-              <button
-                onClick={closeStage}
-                style={{
-                  width: "2rem",
-                  height: "2rem",
-                  borderRadius: "50%",
-                  backgroundColor: "var(--ink)",
-                  color: "var(--parchment)",
-                  fontSize: "0.9rem",
+                  left: "-1.5rem",
+                  top: "0",
+                  width: "3rem",
+                  height: "3rem",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "transform 0.2s",
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.1)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
               >
-                ✕
-              </button>
-            </div>
-
-            {/* Body */}
-            <div style={{ padding: "1rem 1.5rem 1.5rem" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
-                <span style={{ fontSize: "3rem" }}>{activeStage.emoji}</span>
-                <div>
-                  <h2
-                    style={{
-                      fontFamily: "'Cormorant', serif",
-                      color: "var(--ink)",
-                      fontSize: "clamp(1.4rem, 4vw, 2rem)",
-                      fontWeight: 700,
-                      lineHeight: 1.1,
-                      margin: 0,
-                    }}
-                  >
-                    {activeStage.title}
-                  </h2>
-                  <p
-                    style={{
-                      fontFamily: "'Caveat', cursive",
-                      color: activeStage.color,
-                      fontSize: "0.95rem",
-                      margin: "0.25rem 0 0",
-                    }}
-                  >
-                    ~ {activeStage.subtitle} ~
-                  </p>
-                </div>
+                <svg width="40" height="40" viewBox="0 0 40 40">
+                  <line x1="6" y1="6" x2="34" y2="34" stroke={stage.color} strokeWidth="5" strokeLinecap="round" />
+                  <line x1="34" y1="6" x2="6" y2="34" stroke={stage.color} strokeWidth="5" strokeLinecap="round" />
+                </svg>
               </div>
 
+              {/* Content card */}
               <div
                 style={{
-                  width: "100%",
-                  height: "1px",
-                  background: `linear-gradient(to right, ${activeStage.color}, transparent)`,
-                  marginBottom: "1rem",
-                }}
-              />
-
-              <p
-                style={{
-                  fontFamily: "'Cormorant Garamond', serif",
-                  color: "var(--ink-light)",
-                  fontSize: "1.05rem",
-                  fontStyle: "italic",
-                  lineHeight: 1.6,
-                  marginBottom: "1.25rem",
+                  opacity: isVisible ? 1 : 0,
+                  transform: isVisible
+                    ? "translateX(0)"
+                    : isEven ? "translateX(-30px)" : "translateX(30px)",
+                  transition: "opacity 0.7s ease, transform 0.7s ease",
+                  background: "linear-gradient(135deg, var(--parchment) 0%, var(--parchment-dark) 100%)",
+                  border: `2px solid ${stage.color}`,
+                  borderRadius: "6px",
+                  padding: "1.75rem 2rem",
+                  boxShadow: `0 4px 20px ${stage.color}20, 0 2px 8px rgba(44,24,16,0.1)`,
+                  position: "relative",
                 }}
               >
-                {activeStage.content.description}
-              </p>
+                {/* Corner ornaments */}
+                <span style={{ position: "absolute", top: "0.4rem", left: "0.5rem", color: stage.color, opacity: 0.5, fontSize: "0.8rem", pointerEvents: "none" }}>✦</span>
+                <span style={{ position: "absolute", top: "0.4rem", right: "0.5rem", color: stage.color, opacity: 0.5, fontSize: "0.8rem", pointerEvents: "none" }}>✦</span>
 
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {activeStage.content.details.map((detail, i) => (
-                  <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
-                    <span
-                      style={{
-                        marginTop: "2px",
-                        flexShrink: 0,
-                        width: "1.25rem",
-                        height: "1.25rem",
-                        borderRadius: "50%",
-                        backgroundColor: activeStage.color,
-                        color: "white",
-                        fontSize: "0.6rem",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontFamily: "'Oswald', sans-serif",
-                      }}
-                    >
-                      {i + 1}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: "'Cormorant Garamond', serif",
-                        color: "var(--ink)",
-                        fontSize: "1rem",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {detail}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Navigation */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "1rem 1.5rem",
-                borderTop: `1px solid ${activeStage.color}40`,
-              }}
-            >
-              <button
-                onClick={goToPrev}
-                style={{
-                  padding: "0.4rem 1rem",
-                  borderRadius: "3px",
-                  backgroundColor: "transparent",
-                  border: `1.5px solid ${activeStage.color}`,
-                  color: activeStage.color,
-                  fontFamily: "'Oswald', sans-serif",
-                  fontSize: "0.8rem",
-                  letterSpacing: "0.05em",
-                  cursor: "pointer",
-                  transition: "transform 0.2s",
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.05)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
-              >
-                ← Назад
-              </button>
-
-              <div style={{ display: "flex", gap: "6px" }}>
-                {stages.map((s) => (
-                  <div
-                    key={s.id}
+                {/* Badge + Title */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem", flexWrap: "wrap" }}>
+                  <span style={{ fontSize: "2.2rem" }}>{stage.emoji}</span>
+                  <span
                     style={{
-                      width: "8px",
-                      height: "8px",
-                      borderRadius: "50%",
-                      backgroundColor: s.id === activeStage.id ? activeStage.color : "#c4a97a",
-                      transform: s.id === activeStage.id ? "scale(1.4)" : "scale(1)",
-                      transition: "all 0.3s",
+                      fontSize: "0.65rem",
+                      padding: "0.2rem 0.6rem",
+                      borderRadius: "9999px",
+                      backgroundColor: stage.color,
+                      color: "white",
+                      fontFamily: "'Oswald', sans-serif",
+                      letterSpacing: "0.08em",
                     }}
-                  />
-                ))}
-              </div>
+                  >
+                    Этап {["I", "II", "III", "IV", "V", "VI"][idx]}
+                  </span>
+                </div>
 
-              <button
-                onClick={goToNext}
-                style={{
-                  padding: "0.4rem 1rem",
-                  borderRadius: "3px",
-                  backgroundColor: activeStage.color,
-                  border: `1.5px solid ${activeStage.color}`,
-                  color: "white",
-                  fontFamily: "'Oswald', sans-serif",
-                  fontSize: "0.8rem",
-                  letterSpacing: "0.05em",
-                  cursor: "pointer",
-                  transition: "transform 0.2s",
-                }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1.05)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; }}
-              >
-                Вперёд →
-              </button>
+                <h2
+                  style={{
+                    fontFamily: "'Cormorant', serif",
+                    color: "var(--ink)",
+                    fontSize: "clamp(1.5rem, 3.5vw, 2rem)",
+                    fontWeight: 700,
+                    lineHeight: 1.15,
+                    margin: "0 0 0.25rem",
+                  }}
+                >
+                  {stage.title}
+                </h2>
+                <p
+                  style={{
+                    fontFamily: "'Caveat', cursive",
+                    color: stage.color,
+                    fontSize: "1rem",
+                    margin: "0 0 1rem",
+                  }}
+                >
+                  ~ {stage.subtitle} ~
+                </p>
+
+                <div style={{ width: "100%", height: "1px", background: `linear-gradient(to right, ${stage.color}, transparent)`, marginBottom: "1rem" }} />
+
+                <p
+                  style={{
+                    fontFamily: "'Cormorant Garamond', serif",
+                    color: "var(--ink-light)",
+                    fontSize: "1.1rem",
+                    fontStyle: "italic",
+                    lineHeight: 1.6,
+                    marginBottom: "1.25rem",
+                  }}
+                >
+                  {stage.content.description}
+                </p>
+
+                <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                  {stage.content.details.map((detail, i) => (
+                    <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.75rem" }}>
+                      <span
+                        style={{
+                          marginTop: "3px",
+                          flexShrink: 0,
+                          width: "1.3rem",
+                          height: "1.3rem",
+                          borderRadius: "50%",
+                          backgroundColor: stage.color,
+                          color: "white",
+                          fontSize: "0.6rem",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontFamily: "'Oswald', sans-serif",
+                        }}
+                      >
+                        {i + 1}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "'Cormorant Garamond', serif",
+                          color: "var(--ink)",
+                          fontSize: "1.05rem",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {detail}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </main>
 
       {/* Footer */}
       <footer
@@ -850,7 +601,6 @@ export default function Index() {
         <span style={{ color: "var(--gold)" }}>✦</span>
       </footer>
 
-      {/* Tooltip hover styles via global style tag */}
       <style>{`
         @keyframes pulse-cross {
           0%, 100% { filter: drop-shadow(0 0 0 rgba(200,149,42,0.3)); }
@@ -873,14 +623,6 @@ export default function Index() {
           stroke-dashoffset: 1200;
           animation: dash 3s ease forwards;
           animation-delay: 0.5s;
-        }
-
-        @keyframes fade-in-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fade-in-up {
-          animation: fade-in-up 0.4s ease-out forwards;
         }
       `}</style>
     </div>
