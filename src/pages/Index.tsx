@@ -199,13 +199,24 @@ export default function Index() {
             height: "100%",
             objectFit: "cover",
             filter: "sepia(30%) contrast(0.95) brightness(1.05)",
+            opacity: 0.45,
           }}
         />
         <div
           style={{
             position: "absolute",
             inset: 0,
-            background: "radial-gradient(ellipse at 80% 60%, rgba(74,124,142,0.18) 0%, transparent 60%)",
+            background: "radial-gradient(ellipse at 80% 60%, rgba(74,124,142,0.1) 0%, transparent 60%)",
+          }}
+        />
+        {/* Parchment overlay for readability */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundColor: "var(--parchment)",
+            opacity: 0.4,
+            pointerEvents: "none",
           }}
         />
         {/* Fade to parchment at bottom */}
