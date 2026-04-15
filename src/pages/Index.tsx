@@ -179,98 +179,122 @@ export default function Index() {
       className="min-h-screen relative"
       style={{ backgroundColor: "var(--parchment)", fontFamily: "'Cormorant Garamond', serif" }}
     >
-      {/* HEADER */}
-      <header
+      {/* HERO — map as full background */}
+      <section
         style={{
           position: "relative",
-          zIndex: 20,
-          textAlign: "center",
-          paddingTop: "2.5rem",
-          paddingBottom: "1.5rem",
-          transition: "opacity 0.7s ease, transform 0.7s ease",
-          opacity: headerVisible ? 1 : 0,
-          transform: headerVisible ? "translateY(0)" : "translateY(-24px)",
+          width: "100%",
+          minHeight: "100vh",
+          overflow: "hidden",
         }}
       >
-        <div style={{ display: "inline-block", position: "relative" }}>
-          <div
-            style={{
-              fontSize: "0.7rem",
-              letterSpacing: "0.4em",
-              textTransform: "uppercase",
-              marginBottom: "0.5rem",
-              color: "var(--gold)",
-              fontFamily: "'Oswald', sans-serif",
-            }}
-          >
-            ✦ &nbsp; Дипломный проект &nbsp; ✦
-          </div>
-          <h1
-            style={{
-              fontFamily: "'Cormorant', serif",
-              color: "var(--ink)",
-              fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
-              fontWeight: 700,
-              lineHeight: 1.1,
-              margin: 0,
-            }}
-          >
-            Гостиничный комплекс
-            <br />
-            <em style={{ color: "var(--gold)" }}>на берегу моря</em>
-          </h1>
-          <div
-            style={{
-              marginTop: "0.75rem",
-              fontSize: "1.1rem",
-              fontStyle: "italic",
-              color: "var(--ink-light)",
-              fontFamily: "'Cormorant Garamond', serif",
-            }}
-          >
-            Карта путешествия по проекту
-          </div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem", marginTop: "1rem" }}>
-            <div style={{ height: "1px", width: "5rem", background: "linear-gradient(to right, transparent, var(--gold))" }} />
-            <span style={{ color: "var(--gold)", fontSize: "1.2rem" }}>⚓</span>
-            <div style={{ height: "1px", width: "5rem", background: "linear-gradient(to left, transparent, var(--gold))" }} />
-          </div>
-        </div>
-      </header>
+        {/* Map background — full bleed */}
+        <img
+          src={MAP_BG}
+          alt="Карта"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            filter: "sepia(30%) contrast(0.95) brightness(1.05)",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: "radial-gradient(ellipse at 80% 60%, rgba(74,124,142,0.18) 0%, transparent 60%)",
+          }}
+        />
+        {/* Fade to parchment at bottom */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "120px",
+            background: "linear-gradient(to bottom, transparent, var(--parchment))",
+            pointerEvents: "none",
+            zIndex: 5,
+          }}
+        />
 
-      {/* MAP */}
-      <section style={{ position: "relative", maxWidth: "1200px", margin: "0 auto", padding: "0 1rem" }}>
+        {/* Header overlay */}
+        <header
+          style={{
+            position: "relative",
+            zIndex: 20,
+            textAlign: "center",
+            paddingTop: "3rem",
+            paddingBottom: "1.5rem",
+            transition: "opacity 0.7s ease, transform 0.7s ease",
+            opacity: headerVisible ? 1 : 0,
+            transform: headerVisible ? "translateY(0)" : "translateY(-24px)",
+          }}
+        >
+          <div style={{ display: "inline-block", position: "relative" }}>
+            <div
+              style={{
+                fontSize: "0.7rem",
+                letterSpacing: "0.4em",
+                textTransform: "uppercase",
+                marginBottom: "0.5rem",
+                color: "var(--gold)",
+                fontFamily: "'Oswald', sans-serif",
+                textShadow: "0 0 10px var(--parchment), 0 0 20px var(--parchment)",
+              }}
+            >
+              ✦ &nbsp; Дипломный проект &nbsp; ✦
+            </div>
+            <h1
+              style={{
+                fontFamily: "'Cormorant', serif",
+                color: "var(--ink)",
+                fontSize: "clamp(2.5rem, 6vw, 4.5rem)",
+                fontWeight: 700,
+                lineHeight: 1.1,
+                margin: 0,
+                textShadow: "0 0 15px var(--parchment), 0 0 30px var(--parchment), 0 0 45px var(--parchment)",
+              }}
+            >
+              Гостиничный комплекс
+              <br />
+              <em style={{ color: "var(--gold)" }}>на берегу моря</em>
+            </h1>
+            <div
+              style={{
+                marginTop: "0.75rem",
+                fontSize: "1.1rem",
+                fontStyle: "italic",
+                color: "var(--ink-light)",
+                fontFamily: "'Cormorant Garamond', serif",
+                textShadow: "0 0 10px var(--parchment), 0 0 20px var(--parchment)",
+              }}
+            >
+              Карта путешествия по проекту
+            </div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.75rem", marginTop: "1rem" }}>
+              <div style={{ height: "1px", width: "5rem", background: "linear-gradient(to right, transparent, var(--gold))" }} />
+              <span style={{ color: "var(--gold)", fontSize: "1.2rem" }}>⚓</span>
+              <div style={{ height: "1px", width: "5rem", background: "linear-gradient(to left, transparent, var(--gold))" }} />
+            </div>
+          </div>
+        </header>
+
+        {/* Map interactive area */}
         <div
           style={{
             position: "relative",
             width: "100%",
+            maxWidth: "1200px",
+            margin: "0 auto",
             aspectRatio: "16/9",
-            border: "3px solid var(--gold)",
-            borderRadius: "6px",
-            overflow: "hidden",
-            boxShadow: "0 8px 40px rgba(44,24,16,0.2), inset 0 0 60px rgba(44,24,16,0.05)",
+            zIndex: 10,
           }}
         >
-          <img
-            src={MAP_BG}
-            alt="Карта"
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              filter: "sepia(30%) contrast(0.95) brightness(1.05)",
-            }}
-          />
-
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-              background: "radial-gradient(ellipse at 80% 60%, rgba(74,124,142,0.18) 0%, transparent 60%)",
-            }}
-          />
 
           {/* Dotted path */}
           <svg
@@ -428,8 +452,8 @@ export default function Index() {
           >
             ⚓ Кликни на крестик — страница прокрутится к этапу
           </div>
-        </div>
-      </section>
+        </div>{/* end map interactive area */}
+      </section>{/* end hero */}
 
       {/* STAGES — full sections */}
       <main style={{ maxWidth: "900px", margin: "0 auto", padding: "3rem 1rem 2rem" }}>
