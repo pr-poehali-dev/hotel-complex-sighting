@@ -323,23 +323,23 @@ export default function Index() {
                   }}
                 >
                   <svg
-                    width="56"
-                    height="56"
-                    viewBox="0 0 56 56"
+                    width="76"
+                    height="76"
+                    viewBox="0 0 76 76"
                     style={{
-                      filter: `drop-shadow(0 2px 6px rgba(44,24,16,0.5))`,
+                      filter: `drop-shadow(0 3px 8px rgba(44,24,16,0.6))`,
                       transition: "transform 0.25s ease",
                     }}
                     className="cross-svg"
                     onMouseEnter={(e) => { (e.currentTarget as SVGElement).style.transform = "scale(1.25) rotate(12deg)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as SVGElement).style.transform = "scale(1) rotate(0deg)"; }}
                   >
-                    <line x1="8" y1="8" x2="48" y2="48" stroke="var(--ink)" strokeWidth={isLast ? "11" : "9"} strokeLinecap="round" opacity="0.35" />
-                    <line x1="48" y1="8" x2="8" y2="48" stroke="var(--ink)" strokeWidth={isLast ? "11" : "9"} strokeLinecap="round" opacity="0.35" />
-                    <line x1="8" y1="8" x2="48" y2="48" stroke={stage.color} strokeWidth={isLast ? "8" : "6.5"} strokeLinecap="round" />
-                    <line x1="48" y1="8" x2="8" y2="48" stroke={stage.color} strokeWidth={isLast ? "8" : "6.5"} strokeLinecap="round" />
+                    <line x1="10" y1="10" x2="66" y2="66" stroke="var(--ink)" strokeWidth={isLast ? "16" : "14"} strokeLinecap="round" opacity="0.4" />
+                    <line x1="66" y1="10" x2="10" y2="66" stroke="var(--ink)" strokeWidth={isLast ? "16" : "14"} strokeLinecap="round" opacity="0.4" />
+                    <line x1="10" y1="10" x2="66" y2="66" stroke={stage.color} strokeWidth={isLast ? "12" : "10"} strokeLinecap="round" />
+                    <line x1="66" y1="10" x2="10" y2="66" stroke={stage.color} strokeWidth={isLast ? "12" : "10"} strokeLinecap="round" />
                     {isLast && (
-                      <circle cx="28" cy="28" r="24" fill="none" stroke={stage.color} strokeWidth="3.5" strokeDasharray="5,4" />
+                      <circle cx="38" cy="38" r="33" fill="none" stroke={stage.color} strokeWidth="4.5" strokeDasharray="6,5" />
                     )}
                   </svg>
 
@@ -351,9 +351,9 @@ export default function Index() {
                       transform: "translate(-50%, -50%)",
                       fontFamily: "'Cormorant', serif",
                       fontWeight: 700,
-                      fontSize: "0.9rem",
+                      fontSize: "1.15rem",
                       color: "var(--parchment)",
-                      textShadow: `0 0 5px ${stage.color}, 0 0 5px ${stage.color}, 0 0 5px ${stage.color}, 0 0 8px var(--ink)`,
+                      textShadow: `0 0 6px ${stage.color}, 0 0 6px ${stage.color}, 0 0 6px ${stage.color}, 0 0 10px var(--ink)`,
                       pointerEvents: "none",
                       letterSpacing: "-0.02em",
                     }}
@@ -375,12 +375,12 @@ export default function Index() {
                     <div
                       style={{
                         fontFamily: "'Caveat', cursive",
-                        fontSize: "clamp(0.7rem, 1.2vw, 0.9rem)",
+                        fontSize: "clamp(0.95rem, 1.8vw, 1.3rem)",
                         color: "var(--ink)",
-                        textShadow: "0 0 6px var(--parchment), 0 0 6px var(--parchment), 0 0 6px var(--parchment), 0 0 12px var(--parchment)",
+                        textShadow: "0 0 8px var(--parchment), 0 0 8px var(--parchment), 0 0 8px var(--parchment), 0 0 16px var(--parchment), 0 0 20px var(--parchment)",
                         lineHeight: 1.2,
-                        fontWeight: 600,
-                        maxWidth: "120px",
+                        fontWeight: 700,
+                        maxWidth: "140px",
                         whiteSpace: "normal",
                         transition: "color 0.2s",
                       }}
